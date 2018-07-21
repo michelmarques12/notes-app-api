@@ -8,7 +8,7 @@ Resources:
         - ClientId:
             Ref: CognitoUserPoolClient
           ProviderName:
-            Fn::Get:Att: [ "CognitoUserPool", "ProviderName" ]
+            Fn::GetAtt: [ "CognitoUserPool", "ProviderName" ]
   
   CognitoIdentityPoolRoles:
     Type: AWS::Cognito::IdentityPoolRoleAttachment
@@ -17,7 +17,7 @@ Resources:
         Ref: CognitoIdentityPool
       Roles:
         authenticated:
-          Fn::GetAtt: [ "CognitoUserPool", "ProviderName" ]
+          Fn::GetAtt: [CognitoAuthRole, Arn ]
   
   CognitoAuthRole:
     Type: AWS::IAM::Role
@@ -27,7 +27,7 @@ Resources:
         Version: '2012-10-17'
         Statement:
           - Effect: 'Allow'
-            Pricipal:
+            Principal:
               Federated: 'cognito-identity.amazonaws.com'
             Action:
               - 'sts:AssumeRoleWithWebIdentity'
@@ -40,38 +40,41 @@ Resources:
       Policies:
         - PolicyName: 'CognitoAuthorizedPolicy'
           PolicyDocument:
-            - Effect: 'Allow'
-              Action:
-                - 'mobileanalytics:PutEvents'
-                - 'cognito-sync:*'
-                - 'cognito-identity:*'
-              Resource: '*'
-            
-            - Effect: 'Allow'
-              Action:
-                - 'execute-api:Invoke'
-              Resource:
-                Fn::Join:
-                  - ''
-                  -
-                    - 'arn:aws:execute-api:'
-                    - Ref: AWS::Region
-                    - ':'
-                    - Ref: AWS::AccountId
-                    - ':'
-                    - Ref: AWS::ApiGatewayRestApi
-                    - '/*'
-            - Effect: 'Allow'
-              Action:
-                - 's3:*'
-              Resource:
-                - Fn::Join:
-                  - ''
-                  -
-                    - Fn::GetAtt: [AttachmentsBucket, Arn]
-                    - '/private'
-                    - '$'
-                    - '{cognito-identity.amazonaws.com:sub}/*'
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'mobileanalytics:PutEvents'
+                  - 'cognito-sync:*'
+                  - 'cognito-identity:*'
+                Resource: '*'
+              
+              - Effect: 'Allow'
+                Action:
+                  - 'execute-api:Invoke'
+                Resource:
+                  Fn::Join:
+                    - ''
+                    -
+                      - 'arn:aws:execute-api:'
+                      - Ref: AWS::Region
+                      - ':'
+                      - Ref: AWS::AccountId
+                      - ':'
+                      - Ref: ApiGatewayRestApi
+                      - '/*'
+
+              - Effect: 'Allow'
+                Action:
+                  - 's3:*'
+                Resource:
+                  - Fn::Join:
+                    - ''
+                    -
+                      - Fn::GetAtt: [AttachmentsBucket, Arn]
+                      - '/private/'
+                      - '$'
+                      - '{cognito-identity.amazonaws.com:sub}/*'
 
 Outputs:
   IdentityPoolId:
