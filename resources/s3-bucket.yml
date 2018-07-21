@@ -1,0 +1,21 @@
+Resources:
+  AttachmentsBucket:
+    CorsConfiguration:
+      CorsRules:
+        -
+          AllowedOrigins:
+            - '*'
+          AllowedHeaders:
+            - '*'
+          AllowedMethods:
+            - GET
+            - PUT
+            - POST
+            - DELETE
+            - HEAD
+          MaxAge: 3000
+
+Outputs:
+  AttachmentsBucketName:
+    Value:
+      Ref: AttachmentsBucket
